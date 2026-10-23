@@ -8,3 +8,6 @@ logs/
 data/raw/
 *.sqlite
 .DS_Store
+
+venv/
+.vscode/
