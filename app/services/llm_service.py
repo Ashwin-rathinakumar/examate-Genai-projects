@@ -1,4 +1,3 @@
-
 """Gemini generation with a single timeout-triggered fallback attempt."""
 
 import logging
@@ -24,9 +23,7 @@ def _generate_with_model(
     response = client.models.generate_content(
         model=model,
         contents=prompt,
-        config=types.GenerateContentConfig(
-            http_options=types.HttpOptions(timeout=timeout_ms)
-        ),
+        config=types.GenerateContentConfig(http_options=types.HttpOptions(timeout=timeout_ms)),
     )
     answer = response.text
     if not answer or not answer.strip():
@@ -92,15 +89,23 @@ def generate_answer(prompt: str, settings: Any) -> dict[str, Any]:
                     "tokens_out": tokens_out,
                 }
 
-            except (httpx.TimeoutException, TimeoutError) as exc:
+            except (
+                httpx.TimeoutException,
+                TimeoutError,
+                genai.errors.ServerError,
+            ) as exc:
                 logger.warning(
-                    "model=%s status=timeout fallback_used=%s error_type=%s",
+                    "model=%s status=retryable_error fallback_used=%s error_type=%s",
                     model,
                     attempt == 1,
                     type(exc).__name__,
                 )
                 if attempt == 1:
-                    raise ModelUnavailableError("Both Gemini models timed out") from exc
+                    raise ModelUnavailableError(
+                        "Both Gemini models timed out"
+                        if isinstance(exc, (httpx.TimeoutException, TimeoutError))
+                        else "Both Gemini models failed or were unavailable"
+                    ) from exc
             except ModelUnavailableError as exc:
                 logger.error(
                     "model=%s status=unavailable fallback_used=%s",
