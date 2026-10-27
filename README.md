@@ -45,6 +45,28 @@ uvicorn app.main:app --reload
 curl localhost:8000/health
 ```
 
+## Ask Gemini
+
+Set `GEMINI_API_KEY` in your local `.env` file. The `/ask` endpoint sends the
+question to `PRIMARY_MODEL`; it tries `FALLBACK_MODEL` exactly once only when
+the primary request times out. Both attempts use `MODEL_TIMEOUT_SECONDS`.
+Successful responses include `model_used` and `fallback_used`; if both models
+time out, the API returns HTTP 503. Keep `.env` private and never commit your
+real API key.
+
+```bash
+curl -X POST http://localhost:8000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question":"What is the purpose of the RISC-V mstatus register?"}'
+```
+
+`GET /usage` reads `logs/cost_log.jsonl` and returns daily input/output token
+totals and estimated USD cost. The log stores usage metadata only, not prompts
+or answers. Dates use UTC. Costs use the configurable paid-tier prices in
+`.env`; adjust them to match your Gemini billing tier. If Gemini omits token
+metadata, that call is counted but marked in `calls_without_usage` and excluded
+from token and cost totals.
+
 ## Live link
 
 Added in Week 2.
