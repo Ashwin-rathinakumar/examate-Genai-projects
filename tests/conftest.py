@@ -13,7 +13,10 @@ def cost_log_path(tmp_path):
 @pytest.fixture
 def client(cost_log_path):
     app.dependency_overrides[get_settings] = lambda: Settings(
-        app_name="examate-rag", environment="test", cost_log_path=str(cost_log_path)
+        app_name="examate-rag",
+        environment="test",
+        cost_log_path=str(cost_log_path),
+        _env_file=None,
     )
     with TestClient(app) as c:
         yield c

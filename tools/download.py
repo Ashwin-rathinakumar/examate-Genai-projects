@@ -12,8 +12,9 @@ import requests
 RAW = "data/raw"
 MANIFEST = "data/manifest.csv"
 HEADERS = {"User-Agent": "ExamateStudentProject/1.0 (learning project; contact: your-email@example.com)"}
-DELAY = 2 # seconds between requests: be polite to government servers
+DELAY = 2  # seconds between requests: be polite to government servers
 robots = {}
+
 
 def allowed(url):
     root = "{0.scheme}://{0.netloc}".format(urlparse(url))
@@ -22,14 +23,16 @@ def allowed(url):
     try:
         rp.read()
     except Exception:
-        rp = None # robots.txt unreachable: proceed carefully
+        rp = None  # robots.txt unreachable: proceed carefully
         robots[root] = rp
         rp = robots[root]
         return rp is None or rp.can_fetch(HEADERS["User-Agent"], url)
-    
+
+
 def name_for(url):
     name = os.path.basename(urlparse(url).path) or "index.html"
     return name.replace(" ", "_")
+
 
 def main(list_file):
     os.makedirs(RAW, exist_ok=True)
@@ -60,6 +63,7 @@ def main(list_file):
             log.writerow([path, url, date.today().isoformat(), len(r.content), digest])
             print("saved", path, len(r.content), "bytes")
             time.sleep(DELAY)
+
 
 if __name__ == "__main__":
     main(sys.argv[1])

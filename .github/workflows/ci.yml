@@ -17,8 +17,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-dev.txt
 
-      - name: Check code quality
-        run: ruff check .
+      - name: Run pre-commit formatting and lint checks
+        run: pre-commit run --all-files
 
       - name: Run tests
         run: python -m pytest -q

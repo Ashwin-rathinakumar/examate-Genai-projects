@@ -1,6 +1,10 @@
 
 # ISA Lens
 
+[![CI](https://github.com/Ashwin-rathinakumar/examate-Genai-projects/actions/workflows/ci.yml/badge.svg)](https://github.com/Ashwin-rathinakumar/examate-Genai-projects/actions/workflows/ci.yml)
+
+**Live health:** _Replace this text with the verified Render `/health` URL after the first deployment._
+
 > An intelligent instruction-set reference desk for RISC-V chip design teams that finds the exact instruction, register, or extension every time.
 
 ## Problem
@@ -45,19 +49,20 @@ uvicorn app.main:app --reload
 curl localhost:8000/health
 ```
 
-## Ask Gemini
+## Chat with Gemini
 
-Set `GEMINI_API_KEY` in your local `.env` file. The `/ask` endpoint sends the
-question to `PRIMARY_MODEL`; it tries `FALLBACK_MODEL` exactly once only when
-the primary request times out. Both attempts use `MODEL_TIMEOUT_SECONDS`.
-Successful responses include `model_used` and `fallback_used`; if both models
-time out, the API returns HTTP 503. Keep `.env` private and never commit your
-real API key.
+Set `GEMINI_API_KEY` in your local `.env` file. `POST /chat` streams Server-Sent
+Events and automatically tries the configured fallback model when the primary
+model is unavailable before any text is emitted. Its final event contains the
+model used, whether fallback was used, token usage and estimated cost.
+
+The non-streaming `POST /ask` endpoint remains available for compatibility.
+Keep `.env` private and never commit a real API key.
 
 ```bash
-curl -X POST http://localhost:8000/ask \
+curl -N -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
-  -d '{"question":"What is the purpose of the RISC-V mstatus register?"}'
+  -d '{"messages":[{"role":"user","content":"What is the RISC-V mstatus register?"}]}'
 ```
 
 `GET /usage` reads `logs/cost_log.jsonl` and returns daily input/output token
@@ -67,6 +72,27 @@ or answers. Dates use UTC. Costs use the configurable paid-tier prices in
 metadata, that call is counted but marked in `calls_without_usage` and excluded
 from token and cost totals.
 
-## Live link
+## Quality checks
 
-Added in Week 2.
+Install the development dependencies and enable the Git hook once:
+
+```bash
+pip install -r requirements-dev.txt
+pre-commit install
+pre-commit run --all-files
+pytest -q
+```
+
+CI runs the same pre-commit formatting and lint checks on every push and pull
+request.
+
+## Deploy on Render
+
+The included `render.yaml` and `Dockerfile` define a free Render web service.
+Create a Render Blueprint from this repository, enter `GEMINI_API_KEY` and
+`LLM_API_KEY` as secret environment values, and deploy. After `/health` returns
+`{"status":"ok",...}`, replace the **Live health** placeholder at the top with
+the verified public URL and push that README update.
+
+The free service filesystem is ephemeral, so the local JSONL usage log may reset
+when the service restarts. Local development retains the log normally.

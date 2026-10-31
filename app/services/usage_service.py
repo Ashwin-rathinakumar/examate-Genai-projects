@@ -63,7 +63,4 @@ def get_daily_usage(log_path: str | Path) -> list[dict[str, Any]]:
                     day_totals["cost_usd"] += float(item["cost_usd"])
             except (KeyError, TypeError, ValueError, json.JSONDecodeError) as exc:
                 raise ValueError(f"Invalid cost log entry at line {line_number}") from exc
-    return [
-        {**totals[day], "cost_usd": round(totals[day]["cost_usd"], 10)}
-        for day in sorted(totals)
-    ]
+    return [{**totals[day], "cost_usd": round(totals[day]["cost_usd"], 10)} for day in sorted(totals)]

@@ -1,5 +1,7 @@
 """API request and response models."""
 
+from typing import Literal
+
 from pydantic import BaseModel, Field
 
 
@@ -12,6 +14,16 @@ class AskResponse(BaseModel):
     model_used: str
     fallback_used: bool
     duration_ms: float
+
+
+class ChatMessage(BaseModel):
+    role: Literal["system", "user", "assistant"]
+    content: str = Field(min_length=1, max_length=20_000)
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage] = Field(min_length=1, max_length=100)
+    model: str = Field(default="", max_length=200)
 
 
 class DailyUsage(BaseModel):

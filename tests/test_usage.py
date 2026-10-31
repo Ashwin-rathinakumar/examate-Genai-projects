@@ -13,7 +13,8 @@ def test_daily_usage_aggregates_tokens_and_cost(tmp_path):
                 json.dumps({"date": "2026-10-26", "tokens_in": 80, "tokens_out": 20, "cost_usd": 0.000074}),
                 json.dumps({"date": "2026-10-27", "tokens_in": None, "tokens_out": None, "cost_usd": None}),
             ]
-        ) + "\n",
+        )
+        + "\n",
         encoding="utf-8",
     )
 
